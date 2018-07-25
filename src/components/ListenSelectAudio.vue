@@ -2,29 +2,51 @@
   <div class="game">
     <div class="game__question">
       <div class="game__question__image">
-        <img :src="question.image"/>
+        <img :src="question.img"/>
       </div>
     </div>
-    <div class="game__answers">
-      <div class="game__answers__audio"
-           v-for="aswr in question.answers"
-           :class="{
-              right: aswr.correct && question.answered,
-              wrong: !aswr.correct && aswr.selected && question.answered
-           }"
-           @click="selectAnswer(aswr)">
-           <audio :src="aswr.audio"/>
-           <button type="button">Play</button>
+    <div class="game__answers-item">playing
+      <div class="game__answers-item__audio"
+           v-for="(aswr, key) in question.answers">
+           <!-- @click="selectAnswer(aswr)"> -->
+           <div class="game__answers-item__audio__player">
+             <audio :src="aswr.audio"
+               :ref="`audio-aswr-${key}`"
+               @play="$set(playing, key, true)"
+               @pause="$set(playing, key, false)"/>
+             <button type="button"
+                     class="game__answers-item__audio__player__btn"
+                     @click="playing[key]?$refs[`audio-aswr-${key}`][0].pause():$refs[`audio-aswr-${key}`][0].play()">
+                  <!-- <i v-if="!playing[key]">Play</i>
+                  <i v-else>Pause</i> -->
+                  <font-awesome-icon icon="play" v-if="!playing[key]"/>
+                  <font-awesome-icon icon="pause" v-else />
+             </button>
+             <input class="game__answers-item__audio__player__progress" type="range"/>
+             <!-- <div class="game__answers-item__audio__player__status">
+               <img :src="require('@/assets/img/correct-icon.png')">
+             </div> -->
+           </div>
+           <div class="game__answers-item__audio__select" @click="selectAnswer(aswr)"
+                v-if="!question.answered || (!aswr.selected && !aswr.correct)"></div>
+           <img class="game__answers-item__audio__select"
+                :src="require('@/assets/img/correct-icon.png')"
+                v-if="aswr.correct && question.answered">
+                <!-- :style="{ visibility: (!question.answered)?'hidden':'' }" -->
+           <img class="game__answers-item__audio__select"
+                :src="require('@/assets/img/wrong-icon.png')"
+                v-if ="!aswr.correct && aswr.selected && question.answered">
+                <!-- :style="{ visibility: (!question.answered || !aswr.selected)?'hidden':''}" -->
       </div>
-    </div>
-    <div class="game__options">
-      <button class="game__options__btn"
-              :disabled="!question.answered"
-              @click="setCurrent(exercise.questions)"
-              v-if="!ended">
-                Next
-      </button>
-      <button class="game__options__btn" v-else>Finish</button>
+      <div class="game__answers-item__options">
+        <button class="game__answers-item__options__btn"
+                :disabled="!question.answered"
+                @click="setCurrent(exercise.questions)"
+                v-if="!ended">
+          Next
+        </button>
+        <button class="game__answers-item__options__btn" v-else>Finish</button>
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +56,7 @@ export default {
   name: 'ListenImage',
   data () {
     return {
+      playing: [],
       question: {
         answers: []
       },
@@ -83,53 +106,44 @@ export default {
 <style lang="scss">
 .game {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
   max-height: 91%;
   &__question {
+    flex-basis: 50%;
     border: 2px solid blue;
     padding: 1rem 2rem;
-    display: grid;
-    grid-template-rows: 5rem 5rem;
-    &__audio {
-      display: flex;
-      justify-content: center;
-      & i, input {
-        margin: auto 1rem;
-      }
-      & i {
-        background-color: gray;
-        padding: .75rem 1.25rem;
-        border-radius: 100px;
-        &:hover {
-          cursor: pointer;
-        }
-      }
-      & input {
-        background-color: gray;
-        border: 2px solid black;
+    &__image {
+      width: 100%;
+      height: 100%;
+      & img {
+        width: auto;
+        max-width: 100%;
+        max-height: 100%;
       }
     }
   }
-  &__answers {
+  &__answers-item {
+    width: 50%;
     border: 2px solid blue;
     padding: 1rem 2rem;
     display: flex;
-    flex-wrap: wrap;
-    height: 100%;
-    &__image {
-      border: .75rem solid white;
-      flex-grow: 1;
+    justify-content: flex-start;
+    align-content: center;
+    flex-direction: column;
+    position: relative;
+    &__audio {
       border-radius: 2.5rem;
       background-size: cover;
-      width: auto;
-      max-width: 50rem;
-      min-width: 30rem;
-      height: auto;
-      max-height: 30rem;
-      min-height: 20rem;
+      align-self: center;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      &:first-child {
+        padding-top: 5px;
+      }
       &:not(:last-child) {
-        margin-right: 2rem;
+        padding-bottom: 10px;
       }
       &.right {
         border-color: green;
@@ -137,31 +151,71 @@ export default {
       &.wrong {
         border-color: red;
       }
-    }
-  }
-  &__options {
-    border: 2px solid blue;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: flex-end;
-    &__btn {
-      align-self: center;
-      padding: 1rem 3rem;
-      margin-right: 5px;
-      border-radius: 100px;
-      background-color: #3bbfd4;
-      font-weight: 600;
-      font-size: 1.4rem;
-      color: #fff;
-      letter-spacing: 1.5px;
-      &:hover,
-      &:focus {
-        background-color: #28a1b4;
-        cursor: pointer;
-        outline: none;
+      &__player {
+        border: 2px solid #ddd;
+        margin: auto 0;
+        // margin-left: 7.5%;
+        margin-right: 10px;
+        display: flex;
+        justify-content: space-between;
+        height: 2.5em;
+        padding: 5px;
+        border-radius: 100px;
+        &__btn {
+          padding: 10px 10px;
+          border-radius: 100px;
+          font-size: 20px;
+          text-align: center;
+        }
+        &__progress {
+          width: 65%;
+          margin-right: 15px;
+        }
+        &__status {
+          height: 100%;
+          & img {
+            height: 100%;
+          }
+        }
       }
-      &:disabled {
-        filter: grayscale(90%);
+      &__select {
+        background-color: #ddd;
+        width: 54px;
+        height: 54px;
+        border: 2px;
+        border-radius: 150px;
+      }
+    }
+    &__options {
+      position: absolute;
+      top: calc(100% - 57px);
+      left: calc(100% - 143px);
+      border: 2px solid blue;
+      width: 101px;
+      height: 35px;
+      padding: 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      &__btn {
+        align-self: flex-end;
+        padding: 1rem 3rem;
+        margin-right: 5px;
+        border-radius: 100px;
+        background-color: #3bbfd4;
+        font-weight: 600;
+        font-size: 1.4rem;
+        color: #fff;
+        letter-spacing: 1.5px;
+        &:hover,
+        &:focus {
+          background-color: #28a1b4;
+          cursor: pointer;
+          outline: none;
+        }
+        &:disabled {
+          filter: grayscale(90%);
+        }
       }
     }
   }

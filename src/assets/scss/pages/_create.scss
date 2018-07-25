@@ -93,12 +93,14 @@
             display: flex;
             justify-content: center;
             flex-direction: row;
-            padding: 0 24rem;
-            &__img {
-              flex-basis: 26rem;
+            padding-left:calc(50% - 16rem);
+            padding-right: calc(50% - 16rem);
+            margin-bottom: .5rem;
+            &__audio {
+              flex-basis: 60%;
             }
             &__correct {
-              flex-basis: 9rem;
+              flex-basis: 20%;
               display: flex;
               justify-content: center;
               & input {
@@ -106,7 +108,7 @@
               }
             }
             &__option {
-              flex-basis: 10rem;
+              flex-basis: 20%;
               display: flex;
               justify-content: center;
               & button {
@@ -118,9 +120,6 @@
                   background-color: darken(#ff635b, 10);
                 }
               }
-            }
-            &:first-child {
-              margin-bottom: .5rem;
             }
             & img {
               width: 10rem;

@@ -11,7 +11,6 @@
             <thead>
               <tr>
                 <th>Index</th>
-                <th>Question</th>
                 <th>Answers</th>
                 <th>Options</th>
               </tr>
@@ -19,7 +18,6 @@
             <tbody>
               <tr v-for="(qst, index) in exercise.questions">
                 <td>{{ index + 1 }})</td>
-                <td>{{ qst.question }}</td>
                 <td>{{ qst.answers.length }}</td>
                 <td>
                   <button class="create__box__form__questions__edit"
@@ -43,11 +41,8 @@
         <div class="create__box__form__question">
           <form name="question" class="create__box__form__question__info" @submit.prevent="addQuestion(question)">
             <div class="create__box__form__question__info__field">
-              <input type="text" v-model="question.question"/>
-            </div>
-            <div class="create__box__form__question__info__field">
-              <input ref="audio" type="file" @change="audioChanged($event.target.files[0])" v-show="false"/>
-              <input type="text" @click="$refs['audio'].click()" placeholder="Upload an Audio" v-model="question.audio_original" readonly required>
+              <input ref="audio" type="file" @change="imageChanged($event.target.files[0])" v-show="false"/>
+              <input type="text" @click="$refs['audio'].click()" placeholder="Upload an Image" v-model="question.img_original" readonly required>
             </div>
             <div class="create__box__form__question__info__field">
               <button type="submit" v-if="!$store.getters['hasToUpdate']">Save</button>
@@ -57,13 +52,13 @@
           </form>
           <form  name="answer" class="create__box__form__question__answer" @submit.prevent="addAnswer(answer)">
             <button type="submit">Add</button>
-            <input ref="image" type="file" @change="imageChanged($event.target.files[0])" v-show="false"/>
-            <input type="text" @click="$refs['image'].click()" placeholder="Upload an Image" v-model="answer.img_original" readonly required>
+            <input ref="image" type="file" @change="audioChanged($event.target.files[0])" v-show="false"/>
+            <input type="text" @click="$refs['image'].click()" placeholder="Upload an Audio" v-model="answer.audio_original" readonly required>
           </form>
           <div class="create__box__form__question__answers">
             <div class="create__box__form__question__answers__item">
-              <div class="create__box__form__question__answers__item__img">
-                <b>Image</b>
+              <div class="create__box__form__question__answers__item__audio">
+                <b>Audio</b>
               </div>
               <div class="create__box__form__question__answers__item__correct">
                 <b>Correct</b>
@@ -73,8 +68,16 @@
               </div>
             </div>
             <div class="create__box__form__question__answers__item" v-for="(aswr, index) in question.answers">
-              <div class="create__box__form__question__answers__item__img">
-                <img :src="aswr.img">
+              <div class="create__box__form__question__answers__item__audio">
+                <!-- <audio :src="aswr.audio"
+                       :ref="`audio-${index}`"
+                       @playing="$set(playing, index, true)"
+                       @pause="$set(playing, index, false)"/>
+                <button type="button"
+                        @click="playing[index]?$refs[`audio-${index}`][0].pause():$refs[`audio-${index}`][0].play()">
+                          Play -->
+                  {{ aswr.audio_original }}
+                </button>
               </div>
               <div class="create__box__form__question__answers__item__correct">
                 <input type="radio" name="correct" @change="correctChanged(index)" :checked="aswr.correct"/>
@@ -97,16 +100,17 @@ export default {
   name: 'Create',
   data () {
     return {
+      playing: [],
       // exercise: {
       //   questions: []
       // },
       question: {
         question: '',
-        audio: '',
+        img: '',
         answers: []
       },
       answer: {
-        img: '',
+        audio: '',
         correct: false
       }
     }
@@ -131,20 +135,21 @@ export default {
       else if (!this.checkAnswers(question.answers))
         alert('Correct answer must be selected.')
       else {
-        this.$store.commit('addQuestion', question)
+        this.exercise.questions.push(question)
+        this.$store.commit('setExercise', this.exercise)
         this.question = {
           question: '',
-          audio: '',
+          img: '',
           answers: []
         }
       }
     },
     addAnswer (answer) {
-      if (answer.img == '') alert('Image must be Uploaded!')
+      if (answer.audio == '') alert('Image must be Uploaded!')
       else {
         this.question.answers.push(answer)
         this.answer = {
-          img: '',
+          audio: '',
           correct: false
         }
       }
@@ -161,27 +166,27 @@ export default {
       this.$store.commit('setToUpdate', null)
       this.question = {
         question: '',
-        audio: '',
+        img: '',
         answers: []
       }
-    },
-    audioChanged (file) {
-      var reader = new FileReader();
-      reader.onload = (e) => {
-        this.question.audio = e.target.result
-        this.$set(this.question, 'audio_original', file.name)
-      };
-      reader.readAsDataURL(file)
-      this.$set(this.question, 'audio_old', file)
     },
     imageChanged (file) {
       var reader = new FileReader();
       reader.onload = (e) => {
-        this.answer.img = e.target.result
-        this.$set(this.answer, 'img_original', file.name)
+        this.$set(this.question, 'img', e.target.result)
+        this.$set(this.question, 'img_original', file.name)
       };
       reader.readAsDataURL(file)
-      this.$set(this.answer, 'img_old', file)
+      this.$set(this.question, 'img_old', file)
+    },
+    audioChanged (file) {
+      var reader = new FileReader();
+      reader.onload = (e) => {
+        this.$set(this.answer, 'audio', e.target.result)
+        this.$set(this.answer, 'audio_original', file.name)
+      };
+      reader.readAsDataURL(file)
+      this.$set(this.answer, 'audio_old', file)
     },
     correctChanged (index) {
       this.question.answers.map((a, i) => {
@@ -197,5 +202,5 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../../assets/scss/pages/create'
+@import '../../assets/scss/pages/create';
 </style>
