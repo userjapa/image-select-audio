@@ -28,7 +28,7 @@
              </div> -->
            </div>
            <div class="game__answers-item__audio__select" @click="selectAnswer(aswr)"
-                v-if="!question.answered || (!aswr.selected && !aswr.correct)"></div>
+                v-if="!question.answered || (!aswr.selected && !aswr.correct)">?</div>
            <img class="game__answers-item__audio__select"
                 :src="require('@/assets/img/correct-icon.png')"
                 v-if="aswr.correct && question.answered">
@@ -115,9 +115,10 @@ export default {
     padding: 1rem 2rem;
     &__image {
       width: 100%;
-      height: 100%;
+      max-height: 100%;
+      height: auto;
       & img {
-        width: auto;
+        height: auto;
         max-width: 100%;
         max-height: 100%;
       }
@@ -145,12 +146,6 @@ export default {
       &:not(:last-child) {
         padding-bottom: 10px;
       }
-      &.right {
-        border-color: green;
-      }
-      &.wrong {
-        border-color: red;
-      }
       &__player {
         border: 2px solid #ddd;
         margin: auto 0;
@@ -170,6 +165,10 @@ export default {
         &__progress {
           width: 65%;
           margin-right: 15px;
+          &:active,
+          &:focus {
+            outline: none
+          }
         }
         &__status {
           height: 100%;
@@ -184,6 +183,11 @@ export default {
         height: 54px;
         border: 2px;
         border-radius: 150px;
+        font-size: 30px;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 55px;
       }
     }
     &__options {
